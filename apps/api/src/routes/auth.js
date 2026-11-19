@@ -21,8 +21,16 @@ router.post('/register', async (req, res, next) => {
   try {
     const data = registerSchema.parse(req.body);
     const email = data.email.toLowerCase();
-    const passwordHash = await bcrypt.hash(data.password, 12);
-    const user = await prisma.user.create({ data: { ...data, email, passwordHash } });
+    const { password, ...userData } = data;
+const passwordHash = await bcrypt.hash(password, 12);
+
+const user = await prisma.user.create({
+  data: {
+    ...userData,
+    email,
+    passwordHash
+  }
+});
     res.status(201).json({ user: publicUser(user), token: tokenFor(user) });
   } catch (error) {
     if (error.code === 'P2002') return res.status(409).json({ error: 'Este e-mail já está cadastrado.' });
